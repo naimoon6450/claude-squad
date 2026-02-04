@@ -315,6 +315,28 @@ func (l *List) Up() {
 	}
 }
 
+// PageUp moves up by 5 items
+func (l *List) PageUp() {
+	if len(l.items) == 0 {
+		return
+	}
+	l.selectedIdx -= 5
+	if l.selectedIdx < 0 {
+		l.selectedIdx = 0
+	}
+}
+
+// PageDown moves down by 5 items
+func (l *List) PageDown() {
+	if len(l.items) == 0 {
+		return
+	}
+	l.selectedIdx += 5
+	if l.selectedIdx >= len(l.items) {
+		l.selectedIdx = len(l.items) - 1
+	}
+}
+
 func (l *List) addRepo(repo string) {
 	if _, ok := l.repos[repo]; !ok {
 		l.repos[repo] = 0

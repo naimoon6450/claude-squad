@@ -298,6 +298,12 @@ func (i *Instance) Preview() (string, error) {
 	if !i.started || i.Status == Paused {
 		return "", nil
 	}
+
+	// Check if tmux session died unexpectedly
+	if !i.tmuxSession.DoesSessionExist() {
+		return "[tmux session died - press 'r' to resurrect]", nil
+	}
+
 	return i.tmuxSession.CapturePaneContent()
 }
 
@@ -305,6 +311,12 @@ func (i *Instance) HasUpdated() (updated bool, hasPrompt bool) {
 	if !i.started {
 		return false, false
 	}
+
+	// If tmux session doesn't exist, don't try to monitor it
+	if !i.tmuxSession.DoesSessionExist() {
+		return false, false
+	}
+
 	return i.tmuxSession.HasUpdated()
 }
 
@@ -477,6 +489,32 @@ func (i *Instance) Resume() error {
 	}
 
 	i.SetStatus(Running)
+	return nil
+}
+
+// Resurrect restarts a dead tmux session without touching the worktree
+func (i *Instance) Resurrect() error {
+	if !i.started {
+		return fmt.Errorf("cannot resurrect instance that has not been started")
+	}
+	if i.Status == Paused {
+		return fmt.Errorf("instance is paused, use Resume instead")
+	}
+
+	// Check if session already exists
+	if i.tmuxSession.DoesSessionExist() {
+		return fmt.Errorf("tmux session already exists")
+	}
+
+	log.InfoLog.Printf("Resurrecting tmux session for instance: %s", i.Title)
+
+	// Restart the tmux session in the existing worktree
+	if err := i.tmuxSession.Start(i.gitWorktree.GetWorktreePath()); err != nil {
+		log.ErrorLog.Print(err)
+		return fmt.Errorf("failed to restart tmux session: %w", err)
+	}
+
+	log.InfoLog.Printf("Successfully resurrected tmux session for instance: %s", i.Title)
 	return nil
 }
 

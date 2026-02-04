@@ -28,6 +28,10 @@ const (
 	// Diff keybindings
 	KeyShiftUp
 	KeyShiftDown
+
+	// Page navigation
+	KeyCtrlUp
+	KeyCtrlDown
 )
 
 // GlobalKeyStringsMap is a global, immutable map string to keybinding.
@@ -38,6 +42,8 @@ var GlobalKeyStringsMap = map[string]KeyName{
 	"j":          KeyDown,
 	"shift+up":   KeyShiftUp,
 	"shift+down": KeyShiftDown,
+	"ctrl+up":    KeyCtrlUp,
+	"ctrl+down":  KeyCtrlDown,
 	"N":          KeyPrompt,
 	"enter":      KeyEnter,
 	"o":          KeyEnter,
@@ -108,6 +114,14 @@ var GlobalkeyBindings = map[KeyName]key.Binding{
 	KeyResume: key.NewBinding(
 		key.WithKeys("r"),
 		key.WithHelp("r", "resume"),
+	),
+	KeyCtrlUp: key.NewBinding(
+		key.WithKeys("ctrl+up"),
+		key.WithHelp("ctrl+↑", "page up"),
+	),
+	KeyCtrlDown: key.NewBinding(
+		key.WithKeys("ctrl+down"),
+		key.WithHelp("ctrl+↓", "page down"),
 	),
 
 	// -- Special keybindings --

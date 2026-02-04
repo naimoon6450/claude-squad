@@ -474,6 +474,17 @@ func (t *TmuxSession) DoesSessionExist() bool {
 
 // CapturePaneContent captures the content of the tmux pane
 func (t *TmuxSession) CapturePaneContent() (string, error) {
+	// Check if tmux server is running first
+	serverCmd := exec.Command("tmux", "list-sessions")
+	if err := t.cmdExec.Run(serverCmd); err != nil {
+		return "", fmt.Errorf("tmux server not running")
+	}
+
+	// Check if the specific session exists
+	if !t.DoesSessionExist() {
+		return "", fmt.Errorf("tmux session %s does not exist", t.sanitizedName)
+	}
+
 	// Add -e flag to preserve escape sequences (ANSI color codes)
 	cmd := exec.Command("tmux", "capture-pane", "-p", "-e", "-J", "-t", t.sanitizedName)
 	output, err := t.cmdExec.Output(cmd)

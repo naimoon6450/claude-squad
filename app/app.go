@@ -515,6 +515,12 @@ func (m *home) handleKeyPress(msg tea.KeyMsg) (mod tea.Model, cmd tea.Cmd) {
 	case keys.KeyDown:
 		m.list.Down()
 		return m, m.instanceChanged()
+	case keys.KeyCtrlUp:
+		m.list.PageUp()
+		return m, m.instanceChanged()
+	case keys.KeyCtrlDown:
+		m.list.PageDown()
+		return m, m.instanceChanged()
 	case keys.KeyShiftUp:
 		m.tabbedWindow.ScrollUp()
 		return m, m.instanceChanged()
@@ -603,8 +609,16 @@ func (m *home) handleKeyPress(msg tea.KeyMsg) (mod tea.Model, cmd tea.Cmd) {
 		if selected == nil {
 			return m, nil
 		}
-		if err := selected.Resume(); err != nil {
-			return m, m.handleError(err)
+		// Check if this is a dead tmux session that needs resurrection
+		if !selected.Paused() && !selected.TmuxAlive() {
+			if err := selected.Resurrect(); err != nil {
+				return m, m.handleError(err)
+			}
+		} else {
+			// Normal resume for paused instances
+			if err := selected.Resume(); err != nil {
+				return m, m.handleError(err)
+			}
 		}
 		return m, tea.WindowSize()
 	case keys.KeyEnter:
